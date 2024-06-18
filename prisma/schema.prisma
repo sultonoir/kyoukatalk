@@ -1,29 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
-}
-
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
 }
 
 // Necessary for Next auth
@@ -55,14 +36,150 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id                    String         @id @default(cuid())
+    name                  String
+    email                 String         @unique
+    emailVerified         DateTime?
+    image                 String?
+    hashPassword          String?
+    lastOnline            DateTime       @default(now())
+    online                Boolean        @default(false)
+    createdAt             DateTime       @default(now())
+    updatedAt             DateTime       @updatedAt
+    accounts              Account[]
+    sessions              Session[]
+    members               Member[]
+    messages              Messages[]
+    group                 Group[]
+    personalChatsSent     PersonalChat[] @relation("PersonalChatsSent")
+    personalChatsReceived PersonalChat[] @relation("PersonalChatsReceived")
+    Pined                 Pined[]
+    Archive               Archive[]
+    remove                Remove[]
+
+    @@index([id], type: Hash)
+    @@index([name], type: Hash)
+    @@index([email], type: Hash)
+}
+
+model Group {
+    id         String     @id
+    name       String
+    imageUrl   String     @default("")
+    desc       String     @default("") @db.Text
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+    inviteCode String     @default("")
+    userId     String
+    User       User       @relation(fields: [userId], references: [id])
+    member     Member[]
+    messages   Messages[]
+    ChatList   ChatList[]
+
+    @@index([id], type: Hash)
+    @@index([userId], type: Hash)
+}
+
+model Member {
+    id        String   @id
+    role      String   @default("member")
+    userId    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    User      User     @relation(fields: [userId], references: [id])
+    Group     Group    @relation(fields: [groupId], references: [id])
+    groupId   String
+
+    @@index([id], type: Hash)
+    @@index([groupId], type: Hash)
+    @@index([userId], type: Hash)
+}
+
+model Messages {
+    id        String   @id
+    content   String?  @db.Text
+    media     String   @db.Text
+    senderId  String
+    sender    User     @relation(fields: [senderId], references: [id])
+    Group     Group    @relation(fields: [groupId], references: [id])
+    groupId   String
+    createdAt DateTime @default(now())
+
+    @@index([id], type: Hash)
+    @@index([groupId], type: Hash)
+    @@index([senderId], type: Hash)
+}
+
+model PersonalChat {
+    id         String     @id
+    content    String?    @db.Text
+    media      String     @db.Text
+    senderId   String
+    receiverId String
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @default(now())
+    sender     User       @relation("PersonalChatsSent", fields: [senderId], references: [id])
+    receiver   User       @relation("PersonalChatsReceived", fields: [receiverId], references: [id])
+    ChatList   ChatList[]
+
+    @@index([id], type: Hash)
+    @@index([senderId], type: Hash)
+    @@index([receiverId], type: Hash)
+}
+
+model ChatList {
+    id             String        @id
+    groupId        String? // Null if it's a personal chat
+    personalChatId String? // Null if it's a group chat
+    lastMessageAt  DateTime      @default(now())
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    group          Group?        @relation(fields: [groupId], references: [id])
+    personalChat   PersonalChat? @relation(fields: [personalChatId], references: [id])
+    Pined          Pined[]
+    Archive        Archive[]
+    remove         Remove[]
+
+    @@index([id], type: Hash)
+    @@index([groupId], type: Hash)
+    @@index([personalChatId], type: Hash)
+    @@index([lastMessageAt], type: BTree) // Indexing by last message timestamp for efficient sorting
+}
+
+model Pined {
+    id         String   @id
+    userId     String
+    user       User     @relation(fields: [userId], references: [id])
+    chatListId String
+    ChatList   ChatList @relation(fields: [chatListId], references: [id])
+
+    @@index([id], type: Hash)
+    @@index([userId], type: Hash)
+    @@index([chatListId], type: Hash)
+}
+
+model Archive {
+    id         String   @id
+    userId     String
+    user       User     @relation(fields: [userId], references: [id])
+    chatListId String
+    ChatList   ChatList @relation(fields: [chatListId], references: [id])
+
+    @@index([id], type: Hash)
+    @@index([userId], type: Hash)
+    @@index([chatListId], type: Hash)
+}
+
+model Remove {
+    id         String   @id
+    userId     String
+    user       User     @relation(fields: [userId], references: [id])
+    chatListId String
+    ChatList   ChatList @relation(fields: [chatListId], references: [id])
+
+    @@index([id], type: Hash)
+    @@index([userId], type: Hash)
+    @@index([chatListId], type: Hash)
 }
 
 model VerificationToken {
