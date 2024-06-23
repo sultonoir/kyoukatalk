@@ -3,6 +3,9 @@ import { hashSync, genSaltSync } from "bcrypt-ts";
 import { authSchema } from "./user.input";
 import { TRPCError } from "@trpc/server";
 import { createName } from "@/utils/createName";
+import { customAlphabet } from "nanoid";
+
+export const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);
 
 export const userRouter = createTRPCRouter({
   createUser: publicProcedure
@@ -22,7 +25,7 @@ export const userRouter = createTRPCRouter({
       }
 
       const newUser = await ctx.db.user.create({
-        data: { email: input.email, name, hashPassword },
+        data: { email: input.email, name, hashPassword, id: nanoid(10) },
       });
 
       if (!newUser.id) {
@@ -34,4 +37,8 @@ export const userRouter = createTRPCRouter({
 
       return input;
     }),
+  getAlluser: publicProcedure.query(async ({ ctx }) => {
+    const result = await ctx.db.user.findMany();
+    return result;
+  }),
 });

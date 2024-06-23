@@ -6,6 +6,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { getServerAuthSession } from "@/server/auth";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import SessionProvider from "@/providers/SessionProvider";
+// import { WebSocketProvider } from "@/providers/WebsocketProvider";
 
 export const metadata = {
   title: "Kyoukatalk",

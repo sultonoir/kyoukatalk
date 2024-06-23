@@ -30,12 +30,15 @@ const FormSignin = () => {
   // mutate create user
   const createUser = api.user.createUser.useMutation({
     onSuccess: async (e) => {
-      await signIn("signin", {
-        email: e?.email,
-        password: e?.password,
+      const newUser = await signIn("signin", {
+        email: e.email,
+        password: e.password,
         redirect: true,
         callbackUrl: "/",
       });
+      if (!newUser?.ok) {
+        return toast.error(newUser?.error);
+      }
     },
     onError: (e) => {
       toast.error(e.message);

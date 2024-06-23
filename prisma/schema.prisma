@@ -98,7 +98,7 @@ model Member {
 model Messages {
     id        String   @id
     content   String?  @db.Text
-    media     String   @db.Text
+    media     String?  @db.Text
     senderId  String
     sender    User     @relation(fields: [senderId], references: [id])
     Group     Group    @relation(fields: [groupId], references: [id])
@@ -113,7 +113,7 @@ model Messages {
 model PersonalChat {
     id         String     @id
     content    String?    @db.Text
-    media      String     @db.Text
+    media      String?    @db.Text
     senderId   String
     receiverId String
     createdAt  DateTime   @default(now())
@@ -129,8 +129,8 @@ model PersonalChat {
 
 model ChatList {
     id             String        @id
-    groupId        String? // Null if it's a personal chat
-    personalChatId String? // Null if it's a group chat
+    groupId        String?
+    personalChatId String?
     lastMessageAt  DateTime      @default(now())
     createdAt      DateTime      @default(now())
     updatedAt      DateTime      @updatedAt
@@ -143,7 +143,7 @@ model ChatList {
     @@index([id], type: Hash)
     @@index([groupId], type: Hash)
     @@index([personalChatId], type: Hash)
-    @@index([lastMessageAt], type: BTree) // Indexing by last message timestamp for efficient sorting
+    @@index([lastMessageAt], type: BTree)
 }
 
 model Pined {

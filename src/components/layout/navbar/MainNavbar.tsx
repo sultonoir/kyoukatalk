@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import React from "react";
 import Profile from "../profile/Profile";
 import { DialogCreateGroup } from "../group/DialogCreateGroup";
+import ChatLists from "../chat/ChatLists";
 
 const MainNavbar = () => {
   return (
@@ -20,12 +21,7 @@ const MainNavbar = () => {
           placeholder="search"
         />
       </div>
-      <div className="w-full flex-1 flex-col overflow-y-auto transition-opacity duration-500">
-        <div className="h-[500px]">w</div>
-        <div className="h-[500px]">w</div>
-        <div className="h-[500px]">w</div>
-        <div className="h-[500px]">w</div>
-      </div>
+      <ChatLists />
       <Profile />
     </div>
   );
